@@ -24,6 +24,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lunchtray.ui.OrderViewModel
 
 // TODO: Screen enum
+//класс для перечисления маршрутов
+enum class MenuScreen() {
+    Start,
+    Entree,
+    Base,
+    Accompaniment,
+    Checkout
+
+}
 
 // TODO: AppBar
 
