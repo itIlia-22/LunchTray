@@ -15,12 +15,17 @@
  */
 package com.example.lunchtray
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.lunchtray.ui.OrderViewModel
 
 // TODO: Screen enum
@@ -28,7 +33,7 @@ import com.example.lunchtray.ui.OrderViewModel
 enum class MenuScreen() {
     Start,
     Entree,
-    Base,
+    Side,
     Accompaniment,
     Checkout
 
@@ -39,6 +44,7 @@ enum class MenuScreen() {
 @Composable
 fun LunchTrayApp(modifier: Modifier = Modifier) {
     // TODO: Create Controller and initialization
+    val navController: NavHostController = rememberNavController()
 
     // Create ViewModel
     val viewModel: OrderViewModel = viewModel()
@@ -50,5 +56,14 @@ fun LunchTrayApp(modifier: Modifier = Modifier) {
     ) { innerPadding ->
         val uiState by viewModel.uiState.collectAsState()
         // TODO: Navigation host
+        NavHost(
+            navController = navController,
+            startDestination = MenuScreen.Start.name,
+            modifier = modifier.padding(innerPadding)
+        ) {
+            composable(MenuScreen.Start.name) {
+
+            }
+        }
     }
 }
