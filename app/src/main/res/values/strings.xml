@@ -28,4 +28,8 @@
     <string name="tax">Tax: %s</string>
     <string name="total">Total: %s</string>
     <string name="submit">Submit</string>
+
+    <string name="titleDialog">The amount of your order was: %s</string>
+    <string name="infoDialog">Click on the button to return to the home screen</string>
+    <string name="BottomDialog">Ok</string>
 </resources>
