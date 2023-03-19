@@ -15,11 +15,11 @@
  */
 package com.example.lunchtray
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -30,22 +30,48 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.lunchtray.datasource.DataSource
 import com.example.lunchtray.ui.*
 
 // TODO: Screen enum
 //класс для перечисления маршрутов
-enum class MenuScreen() {
-    Start,
-    Entree,
-    Side,
-    Accompaniment,
-    Checkout
+enum class MenuScreen(@StringRes val title: Int) {
+    Start(title = R.string.app_name),
+    Entree(title = R.string.choose_entree),
+    Side(title = R.string.choose_side_dish),
+    Accompaniment(title = R.string.choose_accompaniment),
+    Checkout(title = R.string.order_checkout)
 
 }
 
 // TODO: AppBar
+
+@Composable
+fun LunchAppBar(
+    currentScreen: MenuScreen,
+    canNavigateBack: Boolean,
+    navigateUp: () -> Unit,
+    modifier: Modifier = Modifier
+
+) {
+    TopAppBar(
+        { Text(text = stringResource(currentScreen.title)) },
+        modifier = modifier,
+        navigationIcon = {
+            if (canNavigateBack) {
+                IconButton(onClick = navigateUp) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back_button)
+                    )
+                }
+            }
+        }
+    )
+
+}
 
 @Composable
 fun LunchTrayApp(modifier: Modifier = Modifier) {
@@ -55,9 +81,17 @@ fun LunchTrayApp(modifier: Modifier = Modifier) {
     // Create ViewModel
     val viewModel: OrderViewModel = viewModel()
 
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentScreen = MenuScreen.valueOf(
+        backStackEntry?.destination?.route ?: MenuScreen.Start.name
+    )
     Scaffold(
         topBar = {
             // TODO: AppBar
+            LunchAppBar(
+                currentScreen = currentScreen,
+                canNavigateBack = navController.previousBackStackEntry != null,
+                navigateUp = { navController.navigateUp() })
         }
     ) { innerPadding ->
         val uiState by viewModel.uiState.collectAsState()
@@ -77,10 +111,7 @@ fun LunchTrayApp(modifier: Modifier = Modifier) {
                 EntreeMenuScreen(
                     options = DataSource.entreeMenuItems,
                     onCancelButtonClicked = {
-                        cancelOrderAndNavigateToStart(
-                            viewModel,
-                            navController
-                        )
+                        navController.popBackStack(MenuScreen.Start.name, inclusive = false)
                     },
                     onNextButtonClicked = {
                         navController.navigate(MenuScreen.Side.name)
@@ -94,10 +125,7 @@ fun LunchTrayApp(modifier: Modifier = Modifier) {
                 SideDishMenuScreen(
                     options = DataSource.sideDishMenuItems,
                     onCancelButtonClicked = {
-                        cancelOrderAndNavigateToStart(
-                            viewModel,
-                            navController
-                        )
+                        navController.popBackStack(MenuScreen.Entree.name, inclusive = false)
                     },
                     onNextButtonClicked = {
                         navController.navigate(MenuScreen.Accompaniment.name)
@@ -111,10 +139,7 @@ fun LunchTrayApp(modifier: Modifier = Modifier) {
                 AccompanimentMenuScreen(
                     options = DataSource.accompanimentMenuItems,
                     onCancelButtonClicked = {
-                        cancelOrderAndNavigateToStart(
-                            viewModel,
-                            navController
-                        )
+                        navController.popBackStack(MenuScreen.Side.name, inclusive = false)
                     },
                     onNextButtonClicked = {
                         navController.navigate(MenuScreen.Checkout.name)
@@ -125,7 +150,11 @@ fun LunchTrayApp(modifier: Modifier = Modifier) {
             composable(MenuScreen.Checkout.name) {
                 CheckoutScreen(
                     orderUiState = uiState,
-                    onNextButtonClicked = { },
+                    onNextButtonClicked = {
+                        cancelOrderAndNavigateToStart(
+                        viewModel,
+                        navController
+                    ) },
                     onCancelButtonClicked = {
                         cancelOrderAndNavigateToStart(
                             viewModel,
